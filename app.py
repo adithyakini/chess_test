@@ -223,26 +223,6 @@ with right:
 
     evaluation = stockfish.get_evaluation()
 
-    mistake_type = None
-
-    if loss < -500:
-        mistake_type = "🚨 Blunder"
-
-    elif loss < -250:
-        mistake_type = "⚠️ Mistake"
-
-    elif loss < -100:
-        mistake_type = "ℹ️ Inaccuracy"
-    if mistake_type:
-
-        st.session_state.mistakes.append(
-            {
-                "move": move,
-                "loss": loss,
-                "type": mistake_type
-            }
-    )
-
     try:
 
         top_moves = stockfish.get_top_moves(3)
