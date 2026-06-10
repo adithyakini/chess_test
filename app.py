@@ -2,7 +2,13 @@ import streamlit as st
 import chess
 from stockfish import Stockfish
 from openai import OpenAI
+from chess_component import (
+    st_chessboard
+)
 
+result = st_chessboard()
+
+st.write(result)
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
