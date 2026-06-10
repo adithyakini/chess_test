@@ -1,19 +1,16 @@
 import streamlit as st
-import chess
 from stockfish import Stockfish
 
-st.title("♟️ Stockfish Test")
+st.title("Stockfish Test")
 
 try:
-    stockfish = Stockfish(
-        path="./stockfish/stockfish.exe"
-    )
+    stockfish = Stockfish("/usr/games/stockfish")
 
     stockfish.set_position(["e2e4"])
 
-    best_move = stockfish.get_best_move()
-
-    st.success(f"Stockfish says: {best_move}")
+    st.success(
+        f"Best move: {stockfish.get_best_move()}"
+    )
 
 except Exception as e:
     st.error(str(e))
