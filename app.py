@@ -126,7 +126,7 @@ with right:
         step=50
     )
     stockfish.set_elo_rating(opponent_rating)
-
+    st.write(stockfish.get_parameters())
     stockfish.set_fen_position(
         st.session_state.board.fen()
     )
