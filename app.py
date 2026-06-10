@@ -230,9 +230,6 @@ Move History:
 Engine Evaluation:
 {evaluation}
 
-Best Move:
-{best_move}
-
 Student Question:
 {question}
 
