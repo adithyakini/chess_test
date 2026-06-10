@@ -1,16 +1,11 @@
 import streamlit as st
-from stockfish import Stockfish
+import os
 
-st.title("Stockfish Test")
+st.title("Find Stockfish")
 
-try:
-    stockfish = Stockfish("/usr/games/stockfish")
-
-    stockfish.set_position(["e2e4"])
-
-    st.success(
-        f"Best move: {stockfish.get_best_move()}"
-    )
-
-except Exception as e:
-    st.error(str(e))
+for root, dirs, files in os.walk("/usr"):
+    for file in files:
+        if "stockfish" in file.lower():
+            st.write(
+                os.path.join(root, file)
+            )
