@@ -251,7 +251,7 @@ with right:
     except Exception:
 
         top_moves = []
-
+    st.divider()
     st.subheader(
         "🎯 Top Candidate Moves"
     )
@@ -272,7 +272,7 @@ with right:
         st.caption(
             "No candidate moves available"
         )
-
+    st.divider()
     st.subheader("📈 Evaluation")
 
     st.metric(
@@ -281,7 +281,7 @@ with right:
             evaluation
         )
     )
-
+    st.divider()
     st.subheader("⚠️ Mistakes")
     if not st.session_state.mistakes:
 
