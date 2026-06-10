@@ -38,6 +38,20 @@ def evaluation_to_text(evaluation):
 
     return "Unknown"
 
+def evaluation_to_cp(evaluation):
+
+    if evaluation["type"] == "cp":
+        return evaluation["value"]
+
+    if evaluation["type"] == "mate":
+
+        if evaluation["value"] > 0:
+            return 10000
+
+        return -10000
+
+    return 0
+
 # --------------------------------------------------
 # SESSION STATE
 # --------------------------------------------------
@@ -54,6 +68,17 @@ if "chat_history" not in st.session_state:
 if "opponent_rating" not in st.session_state:
     st.session_state.opponent_rating = 1500
 
+if "mistakes" not in st.session_state:
+    st.session_state.mistakes = []
+
+if "previous_fen" not in st.session_state:
+    st.session_state.previous_fen = None
+
+if "previous_eval" not in st.session_state:
+    st.session_state.previous_eval = None
+
+if "auto_coach_messages" not in st.session_state:
+    st.session_state.auto_coach_messages = []
 # --------------------------------------------------
 # LAYOUT
 # --------------------------------------------------
@@ -94,7 +119,25 @@ with left:
             user_move = chess.Move.from_uci(move)
 
             if user_move in st.session_state.board.legal_moves:
+                stockfish = get_stockfish()
 
+                stockfish.set_elo_rating(
+                    st.session_state.opponent_rating
+                )
+
+                stockfish.set_fen_position(
+                    st.session_state.board.fen()
+                )
+
+                before_eval = stockfish.get_evaluation()
+
+                st.session_state.previous_fen = (
+                    st.session_state.board.fen()
+                )
+
+                st.session_state.previous_eval = (
+                    before_eval
+                )
                 st.session_state.board.push(
                     user_move
                 )
@@ -112,7 +155,17 @@ with left:
                 stockfish.set_fen_position(
                     st.session_state.board.fen()
                 )
+                stockfish.set_fen_position(
+                    st.session_state.board.fen()
+                )
 
+                after_eval = stockfish.get_evaluation()
+
+                loss = (
+                    evaluation_to_cp(after_eval)
+                    -
+                    evaluation_to_cp(before_eval)
+                )   
                 ai_move = stockfish.get_best_move()
 
                 if ai_move:
@@ -170,6 +223,26 @@ with right:
 
     evaluation = stockfish.get_evaluation()
 
+    mistake_type = None
+
+    if loss < -500:
+        mistake_type = "🚨 Blunder"
+
+    elif loss < -250:
+        mistake_type = "⚠️ Mistake"
+
+    elif loss < -100:
+        mistake_type = "ℹ️ Inaccuracy"
+    if mistake_type:
+
+        st.session_state.mistakes.append(
+            {
+                "move": move,
+                "loss": loss,
+                "type": mistake_type
+            }
+    )
+
     try:
 
         top_moves = stockfish.get_top_moves(3)
@@ -209,7 +282,26 @@ with right:
     )
 
     st.subheader("📜 Move History")
+    st.subheader("⚠️ Mistakes")
 
+    if not st.session_state.mistakes:
+
+        st.caption(
+            "No mistakes detected."
+        )
+
+    else:
+
+        for m in reversed(
+            st.session_state.mistakes
+        ):
+
+            st.write(
+                f"{m['type']} "
+                f"{m['move']} "
+                f"({m['loss']} cp)"
+            )
+            
     if not st.session_state.moves:
 
         st.caption(
