@@ -1,7 +1,7 @@
 import streamlit as st
 from stockfish import Stockfish
 
-st.title("♟️ Stockfish Test")
+st.title("Stockfish Debug")
 
 try:
 
@@ -9,13 +9,7 @@ try:
         path="/usr/games/stockfish"
     )
 
-    stockfish.set_position(["e2e4"])
-
-    best_move = stockfish.get_best_move()
-
-    st.success(
-        f"Stockfish says: {best_move}"
-    )
+    st.write(dir(stockfish))
 
 except Exception as e:
 
