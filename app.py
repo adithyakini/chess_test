@@ -1,7 +1,11 @@
 import streamlit as st
 import chess
 from stockfish import Stockfish
+from openai import OpenAI
 
+client = OpenAI(
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
 st.set_page_config(layout="wide")
 
 # --------------------------------------------------
@@ -10,6 +14,13 @@ st.set_page_config(layout="wide")
 
 stockfish = Stockfish("/usr/games/stockfish")
 stockfish.set_skill_level(10)
+
+#------------------------------------------
+#  Chat History for coach interactions
+#------------------------------------------
+
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
 # --------------------------------------------------
 # SESSION STATE
@@ -83,11 +94,6 @@ with left:
 
 with right:
 
-    st.subheader("Move History")
-
-    for move in st.session_state.moves:
-        st.write(move)
-
     stockfish.set_fen_position(
         st.session_state.board.fen()
     )
@@ -96,10 +102,85 @@ with right:
 
     best_move = stockfish.get_best_move()
 
-    st.subheader("Evaluation")
-
+    st.subheader("📈 Evaluation")
     st.json(evaluation)
 
-    st.subheader("Best Move")
-
+    st.subheader("🎯 Best Move")
     st.write(best_move)
+
+    st.subheader("📜 Move History")
+
+    for move in st.session_state.moves:
+        st.write(move)
+
+    st.divider()
+
+    st.subheader("🤖 Chess Coach")
+
+    question = st.text_input(
+        "Ask Coach",
+        placeholder="Why was e4 good?"
+    )
+
+    if st.button("Ask Coach") and question:
+
+        with st.spinner("Coach thinking..."):
+
+            move_history = "\n".join(
+                st.session_state.moves
+            )
+
+            prompt = f"""
+You are a professional chess coach.
+
+Current FEN:
+{st.session_state.board.fen()}
+
+Move History:
+{move_history}
+
+Engine Evaluation:
+{evaluation}
+
+Best Move:
+{best_move}
+
+Student Question:
+{question}
+
+Give a practical chess explanation.
+Keep it concise.
+"""
+
+            response = client.chat.completions.create(
+                model="gpt-5-mini",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            )
+
+            answer = response.choices[0].message.content
+
+            st.session_state.chat_history.append(
+                {
+                    "question": question,
+                    "answer": answer
+                }
+            )
+
+    for chat in reversed(
+        st.session_state.chat_history
+    ):
+
+        st.markdown(
+            f"**You:** {chat['question']}"
+        )
+
+        st.markdown(
+            f"**Coach:** {chat['answer']}"
+        )
+
+        st.divider()
