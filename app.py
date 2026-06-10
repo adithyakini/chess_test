@@ -1,42 +1,19 @@
 import streamlit as st
 import chess
+from stockfish import Stockfish
 
-st.set_page_config(layout="wide")
+st.title("♟️ Stockfish Test")
 
-st.title("♟️ Chess Coach")
+try:
+    stockfish = Stockfish(
+        path="./stockfish/stockfish.exe"
+    )
 
-if "board" not in st.session_state:
-    st.session_state.board = chess.Board()
+    stockfish.set_position(["e2e4"])
 
-st.write("Current Position")
+    best_move = stockfish.get_best_move()
 
-st.code(st.session_state.board.fen())
+    st.success(f"Stockfish says: {best_move}")
 
-move = st.text_input(
-    "Enter move (UCI)",
-    placeholder="e2e4"
-)
-
-if st.button("Play Move"):
-
-    try:
-
-        chess_move = chess.Move.from_uci(
-            move
-        )
-
-        if chess_move in st.session_state.board.legal_moves:
-
-            st.session_state.board.push(
-                chess_move
-            )
-
-            st.success("Move played")
-
-        else:
-
-            st.error("Illegal move")
-
-    except:
-
-        st.error("Invalid move")
+except Exception as e:
+    st.error(str(e))
