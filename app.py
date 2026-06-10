@@ -165,7 +165,28 @@ with left:
                     evaluation_to_cp(after_eval)
                     -
                     evaluation_to_cp(before_eval)
-                )   
+                )
+                            
+                mistake_type = None
+
+                if loss < -500:
+                    mistake_type = "🚨 Blunder"
+
+                elif loss < -250:
+                    mistake_type = "⚠️ Mistake"
+                    
+                elif loss < -100:
+                    mistake_type = "ℹ️ Inaccuracy"
+                if mistake_type:
+
+                    st.session_state.mistakes.append(
+                        {
+                            "move": move,
+                            "loss": loss,
+                            "type": mistake_type
+                        }
+                )
+                
                 ai_move = stockfish.get_best_move()
 
                 if ai_move:
