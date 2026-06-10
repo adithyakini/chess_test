@@ -2,12 +2,37 @@ import streamlit as st
 import chess
 from stockfish import Stockfish
 from openai import OpenAI
+import chess.polyglot
 
 client = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 st.set_page_config(layout="wide")
 
+if "last_explanation" not in st.session_state:
+    st.session_state.last_explanation = ""
+
+if "blunders" not in st.session_state:
+    st.session_state.blunders = []
+
+if "previous_eval" not in st.session_state:
+    st.session_state.previous_eval = None
+# --------------------------------------------------
+# Evaluation Helper
+# --------------------------------------------------
+def evaluation_to_cp(evaluation):
+
+    if evaluation["type"] == "cp":
+        return evaluation["value"]
+
+    if evaluation["type"] == "mate":
+
+        if evaluation["value"] > 0:
+            return 10000
+
+        return -10000
+
+    return 0
 # --------------------------------------------------
 # STOCKFISH
 # --------------------------------------------------
@@ -93,6 +118,14 @@ with left:
             st.error(str(e))
 
 with right:
+    opponent_rating = st.slider(
+        "Opponent Rating",
+        min_value=500,
+        max_value=2850,
+        value=1500,
+        step=50
+    )
+    stockfish.set_elo_rating(opponent_rating)
 
     stockfish.set_fen_position(
         st.session_state.board.fen()
@@ -101,6 +134,33 @@ with right:
     evaluation = stockfish.get_evaluation()
 
     best_move = stockfish.get_best_move()
+    top_moves = stockfish.get_top_moves(3)
+
+    #------------------------------------------
+    # Blunder Detection
+    #-------------------------------------------
+    stockfish.set_fen_position(
+        st.session_state.board.fen()
+    )
+
+    before_eval = evaluation_to_cp(
+        stockfish.get_evaluation()
+    )
+
+    stockfish.set_fen_position(
+        st.session_state.board.fen()
+    )
+
+    after_eval = evaluation_to_cp(
+        stockfish.get_evaluation()
+    )
+    st.subheader("🎯 Top Candidate Moves")
+
+    for idx, move in enumerate(top_moves, start=1):
+
+        st.write(
+            f"{idx}. {move['Move']}"
+        )
 
     st.subheader("📈 Evaluation")
     st.json(evaluation)
@@ -150,8 +210,7 @@ Student Question:
 
 Give a practical chess explanation.
 Keep it concise.
-"""
-
+""" 
             response = client.chat.completions.create(
                 model="gpt-5-mini",
                 messages=[
