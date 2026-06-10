@@ -54,11 +54,13 @@ function ChessBoard(props) {
   };
 
   return (
-    <Chessboard
-      options={
-        chessboardOptions
-      }
-    />
+    <div>
+      <h2>React Component Loaded</h2>
+
+      <Chessboard
+        options={chessboardOptions}
+      />
+    </div>
   );
 }
 

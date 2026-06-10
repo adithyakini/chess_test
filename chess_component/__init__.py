@@ -1,34 +1,22 @@
 import os
 import streamlit.components.v1 as components
 
-_RELEASE = False
+parent_dir = os.path.dirname(
+    os.path.abspath(__file__)
+)
 
-if not _RELEASE:
+build_dir = os.path.join(
+    parent_dir,
+    "frontend",
+    "dist"
+)
 
-    _component_func = components.declare_component(
+_component_func = (
+    components.declare_component(
         "chessboard",
-        url="http://localhost:5174"
+        path=build_dir
     )
-
-else:
-
-    parent_dir = os.path.dirname(
-        os.path.abspath(__file__)
-    )
-
-    build_dir = os.path.join(
-        parent_dir,
-        "frontend",
-        "dist"
-    )
-
-    _component_func = (
-        components.declare_component(
-            "chessboard",
-            path=build_dir
-        )
-    )
-
+)
 
 def st_chessboard(fen="start"):
 
