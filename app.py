@@ -120,7 +120,7 @@ with left:
 with right:
     opponent_rating = st.slider(
         "Opponent Rating",
-        min_value=1000,
+        min_value=1200,
         max_value=2850,
         value=1500,
         step=50
