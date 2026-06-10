@@ -120,13 +120,12 @@ with left:
 with right:
     opponent_rating = st.slider(
         "Opponent Rating",
-        min_value=500,
+        min_value=700,
         max_value=2850,
         value=1500,
         step=50
     )
     stockfish.set_elo_rating(opponent_rating)
-    st.write(stockfish.get_parameters())
     stockfish.set_fen_position(
         st.session_state.board.fen()
     )
