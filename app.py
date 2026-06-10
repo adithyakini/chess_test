@@ -21,18 +21,12 @@ client = OpenAI(
 )
 
 # --------------------------------------------------
-# STOCKFISH
-# --------------------------------------------------
-
-@st.cache_resource
-def get_stockfish():
-    return Stockfish("/usr/games/stockfish")
-
-stockfish = get_stockfish()
-
-# --------------------------------------------------
 # HELPERS
 # --------------------------------------------------
+
+def get_stockfish():
+    sf = Stockfish("/usr/games/stockfish")
+    return sf
 
 def evaluation_to_text(evaluation):
 
@@ -57,6 +51,9 @@ if "moves" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+if "opponent_rating" not in st.session_state:
+    st.session_state.opponent_rating = 1500
+
 # --------------------------------------------------
 # LAYOUT
 # --------------------------------------------------
@@ -70,6 +67,14 @@ left, right = st.columns([2, 1])
 with left:
 
     st.title("♟️ Chess Coach")
+
+    if st.button("♻️ New Game"):
+
+        st.session_state.board = chess.Board()
+        st.session_state.moves = []
+        st.session_state.chat_history = []
+
+        st.rerun()
 
     st.subheader("Current Position")
 
@@ -96,6 +101,12 @@ with left:
 
                 st.session_state.moves.append(
                     f"You: {move}"
+                )
+
+                stockfish = get_stockfish()
+
+                stockfish.set_elo_rating(
+                    st.session_state.opponent_rating
                 )
 
                 stockfish.set_fen_position(
@@ -138,20 +149,20 @@ with right:
         "Rating",
         min_value=1350,
         max_value=2850,
-        value=1500,
+        value=st.session_state.opponent_rating,
         step=50,
         label_visibility="collapsed"
     )
 
-    try:
+    st.session_state.opponent_rating = (
+        opponent_rating
+    )
 
-        stockfish.set_elo_rating(
-            opponent_rating
-        )
+    stockfish = get_stockfish()
 
-    except:
-
-        stockfish.set_skill_level(10)
+    stockfish.set_elo_rating(
+        opponent_rating
+    )
 
     stockfish.set_fen_position(
         st.session_state.board.fen()
@@ -159,10 +170,16 @@ with right:
 
     evaluation = stockfish.get_evaluation()
 
-    top_moves = stockfish.get_top_moves(3)
+    try:
+
+        top_moves = stockfish.get_top_moves(3)
+
+    except Exception:
+
+        top_moves = []
 
     st.subheader(
-        "🎯 Top Candidate Moves"
+        "🎯 Candidate Moves"
     )
 
     if top_moves:
@@ -175,6 +192,12 @@ with right:
             st.write(
                 f"{idx}. {move_data['Move']}"
             )
+
+    else:
+
+        st.caption(
+            "No candidate moves available"
+        )
 
     st.subheader("📈 Evaluation")
 
@@ -219,7 +242,7 @@ with right:
             )
 
             prompt = f"""
-You are a FIDE chess coach.
+You are a professional FIDE chess coach.
 
 Current Position:
 {st.session_state.board.fen()}
@@ -236,9 +259,9 @@ Student Question:
 Give a practical chess explanation.
 
 Focus on:
-- Plans
-- Tactical ideas
-- Strategic concepts
+- plans
+- tactics
+- positional ideas
 
 Keep answer under 200 words.
 """
