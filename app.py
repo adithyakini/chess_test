@@ -253,7 +253,7 @@ with right:
         top_moves = []
 
     st.subheader(
-        "🎯 Candidate Moves"
+        "🎯 Top Candidate Moves"
     )
 
     if top_moves:
@@ -282,9 +282,7 @@ with right:
         )
     )
 
-    st.subheader("📜 Move History")
     st.subheader("⚠️ Mistakes")
-
     if not st.session_state.mistakes:
 
         st.caption(
@@ -302,7 +300,8 @@ with right:
                 f"{m['move']} "
                 f"({m['loss']} cp)"
             )
-            
+    st.divider()
+    st.subheader("📜 Move History")        
     if not st.session_state.moves:
 
         st.caption(
