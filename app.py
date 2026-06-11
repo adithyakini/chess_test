@@ -6,9 +6,16 @@ from chess_component import (
     st_chessboard
 )
 
+#result = st_chessboard()
+#st.write(result)
+
+st.write("Before")
+
 result = st_chessboard()
 
+st.write("After")
 st.write(result)
+
 # --------------------------------------------------
 # PAGE CONFIG
 # --------------------------------------------------
